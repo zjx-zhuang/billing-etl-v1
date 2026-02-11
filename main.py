@@ -224,4 +224,16 @@ def main():
     
 
 if __name__ == "__main__":
-     main()
+    #正式任务
+    #main()
+    
+    #测试日常任务
+    #daily_cron_work()
+
+    #整月手动同步任务到临时表
+    calc_service = BillingCalculationService()
+    invoice_month="202601"
+    target_table="dwm_standard_daily_billing_calculated_tmp"
+    month_task_day(invoice_month,usage_day_start=None,usage_day_end=None,target_table=target_table, calc_service=calc_service )   
+    
+
