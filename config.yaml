@@ -1,9 +1,0 @@
-# ClickHouse Configuration
-clickhouse:
-  host: "34.21.0.33"
-  port: 9000
-  user: "billing"
-  password: "billingPassw0rd.*2025"
-  database: "billing"
-  secure: true
-  verify: false
