@@ -214,7 +214,7 @@ class BillingCalculationService:
                     ,sum(c_sud) as c_sud 
                     ,sum(internal_credits_cost) as internal_credits_cost
                     ,sum(internal_credits_consumption) as internal_credits_consumption
-                   from   billing.ods_standard_daily_billing_test 
+                   from   billing.ods_standard_daily_billing 
                    WHERE invoice_month = %(invoice_month)s 
 	               and usage_day = %(usage_day)s 
                    group by 
