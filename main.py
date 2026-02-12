@@ -43,7 +43,7 @@ def month_task_day(invoice_month: str,usage_day_start: datetime.date,usage_day_e
     logger.info(f"Processing invoice_month: {invoice_month}")
     if not usage_day_start or not usage_day_end:
         usage_day_start, usage_day_end = calc_service._get_min_max_usage_day(invoice_month=invoice_month)   
-    logger.info(f"Usage day range: {usage_day_start} to {usage_day_end}")
+    logger.info(f"_PARTITIONTIME range: {usage_day_start} to {usage_day_end}")
 
     if not usage_day_start or not usage_day_end:
         logger.error(f"No usage data found for {invoice_month}")

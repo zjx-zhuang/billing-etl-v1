@@ -95,7 +95,7 @@ class BillingCalculationService:
 
     def _get_min_max_usage_day(self, invoice_month):
         query = """
-            SELECT min(usage_day), max(usage_day)
+            SELECT min(_PARTITIONTIME), max(_PARTITIONTIME)
             FROM billing.ods_standard_daily_billing
             WHERE invoice_month = %(invoice_month)s
         """
@@ -200,7 +200,7 @@ class BillingCalculationService:
         """
         query = """
             select
-                    invoice_month, billing_account_id, usage_day, project_id, service_id,service_description, sku_id, cost_type  
+                    invoice_month, billing_account_id, _PARTITIONTIME as usage_day, project_id, service_id,service_description, sku_id, cost_type  
                     ,sum(usage_amount_in_pricing_units) as usage_amount_in_pricing_units   
                     ,sum(cost) as cost
                     ,sum(cost_at_list) as cost_at_list
@@ -216,9 +216,9 @@ class BillingCalculationService:
                     ,sum(internal_credits_consumption) as internal_credits_consumption
                    from   billing.ods_standard_daily_billing 
                    WHERE invoice_month = %(invoice_month)s 
-	               and usage_day = %(usage_day)s 
+	               and _PARTITIONTIME = %(usage_day)s 
                    group by 
-                   invoice_month, billing_account_id, usage_day, project_id, service_id, service_description,sku_id, cost_type   
+                   invoice_month, billing_account_id, _PARTITIONTIME, project_id, service_id, service_description,sku_id, cost_type   
         """
         params = {
             'invoice_month': invoice_month,

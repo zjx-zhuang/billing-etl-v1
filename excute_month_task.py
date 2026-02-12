@@ -226,7 +226,7 @@ def main():
 if __name__ == "__main__":
     #整月手动同步任务到临时表
     calc_service = BillingCalculationService()
-    invoice_month="202601"
+    invoice_month="202602"
     temp_table='dwm_standard_daily_billing_calculated_tmp'
     target_table='dwm_standard_daily_billing_calculated'
     #先清理临时表指定时间段分区
@@ -239,21 +239,21 @@ if __name__ == "__main__":
     #插入临时表
     month_task_day(invoice_month,usage_day_start=None,usage_day_end=None,target_table=temp_table, calc_service=calc_service )   
     
-    # 清理目标表
-    sql_clean_target=f"""
-    ALTER TABLE {target_table}
-    DELETE WHERE invoice_month='{invoice_month}'
-    """
-    calc_service.execute_sql(sql_clean_target)
+    # # 清理目标表
+    # sql_clean_target=f"""
+    # ALTER TABLE {target_table}
+    # DELETE WHERE invoice_month='{invoice_month}'
+    # """
+    # calc_service.execute_sql(sql_clean_target)
 
-    # 合并数据到目标表
-    sql_merge=f"""
-    INSERT INTO {target_table}
-    SELECT * FROM {temp_table}
-    WHERE invoice_month='{invoice_month}'
-    """
-    calc_service.execute_sql(sql_merge)
-    calc_service.send_feishu_alarm(f"月度同步任务执行结束： for invoice_month={invoice_month} ")
+    # # 合并数据到目标表
+    # sql_merge=f"""
+    # INSERT INTO {target_table}
+    # SELECT * FROM {temp_table}
+    # WHERE invoice_month='{invoice_month}'
+    # """
+    # calc_service.execute_sql(sql_merge)
+    # calc_service.send_feishu_alarm(f"月度同步任务执行结束： for invoice_month={invoice_month} ")
 
 
 
