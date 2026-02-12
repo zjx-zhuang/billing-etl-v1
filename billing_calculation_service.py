@@ -95,7 +95,7 @@ class BillingCalculationService:
 
     def _get_min_max_usage_day(self, invoice_month):
         query = """
-            SELECT min(_PARTITIONTIME), max(_PARTITIONTIME)
+            SELECT min(usage_day), max(usage_day)
             FROM billing.ods_standard_daily_billing
             WHERE invoice_month = %(invoice_month)s
         """

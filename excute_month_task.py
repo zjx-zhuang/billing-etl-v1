@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from billing_calculation_service import BillingCalculationService
 from calculate.service import CalculateService
 from utils.logger import setup_logger
+import time
 
 # Configure logging
 logger = setup_logger()
@@ -161,70 +162,11 @@ def detail_billing_id_day(invoice_month: str, calc_service: BillingCalculationSe
 
 
 
-def daily_cron_work():
-    current_date = datetime.now().date()
-    usage_day_start = current_date - timedelta(days=4)
-    first_day=current_date.replace(day=1)
-    if(usage_day_start<first_day):
-        usage_day_start = first_day
-    usage_day_end = current_date
-    invoice_month = current_date.strftime('%Y%m')
-    temp_table='dwm_standard_daily_billing_calculated_tmp'
-    target_table='dwm_standard_daily_billing_calculated'
-    calc_service = BillingCalculationService()
 
-    #先清理临时表指定时间段分区
-    sql_clkean_tmp=f"""
-    ALTER TABLE {target_table}
-    DELETE WHERE invoice_month='{invoice_month}'
-    and usage_day >='{usage_day_start}'
-    and usage_day <='{usage_day_end}'
-    """
-    calc_service.execute_sql(sql_clkean_tmp)
-    month_task_day(invoice_month=invoice_month, usage_day_start=usage_day_start, usage_day_end=usage_day_end, target_table=temp_table, calc_service=calc_service)
-     # 清理目标表
-    sql_clean_target=f"""
-    ALTER TABLE {target_table}
-    DELETE WHERE invoice_month='{invoice_month}'
-    and usage_day >='{usage_day_start}'
-    and usage_day <='{usage_day_end}'
-    """
-    calc_service.execute_sql(sql_clean_target)
-    
-    # 合并数据到目标表
-    sql_merge=f"""
-    INSERT INTO {target_table}
-    SELECT * FROM {temp_table}
-    WHERE invoice_month='{invoice_month}'
-    and usage_day >='{usage_day_start}'
-    and usage_day <='{usage_day_end}'
-    """
-    calc_service.execute_sql(sql_merge)
-    calc_service.send_feishu_alarm(f"今日任务执行结束： for invoice_month={invoice_month} from {usage_day_start} to {usage_day_end}")
-
-
-
-def main():
-
-    # Schedule the task to run every day at 07:00
-    schedule.every().day.at("05:00").do(daily_cron_work)
-    logger.info("Scheduler started. Waiting for next job execution at 05:00...")
-    
-    while True:
-        schedule.run_pending()
-        time.sleep(1) # Check every minute
-
-    
-
-    
-
-
-
-
-    
 
 if __name__ == "__main__":
     #整月手动同步任务到临时表
+    start_time = time.time()
     calc_service = BillingCalculationService()
     invoice_month="202602"
     temp_table='dwm_standard_daily_billing_calculated_tmp'
@@ -240,20 +182,22 @@ if __name__ == "__main__":
     month_task_day(invoice_month,usage_day_start=None,usage_day_end=None,target_table=temp_table, calc_service=calc_service )   
     
     # # 清理目标表
-    # sql_clean_target=f"""
-    # ALTER TABLE {target_table}
-    # DELETE WHERE invoice_month='{invoice_month}'
-    # """
-    # calc_service.execute_sql(sql_clean_target)
+    sql_clean_target=f"""
+    ALTER TABLE {target_table}
+    DELETE WHERE invoice_month='{invoice_month}'
+    """
+    calc_service.execute_sql(sql_clean_target)
 
-    # # 合并数据到目标表
-    # sql_merge=f"""
-    # INSERT INTO {target_table}
-    # SELECT * FROM {temp_table}
-    # WHERE invoice_month='{invoice_month}'
-    # """
-    # calc_service.execute_sql(sql_merge)
-    # calc_service.send_feishu_alarm(f"月度同步任务执行结束： for invoice_month={invoice_month} ")
+    # 合并数据到目标表
+    sql_merge=f"""
+    INSERT INTO {target_table}
+    SELECT * FROM {temp_table}
+    WHERE invoice_month='{invoice_month}'
+    """
+    calc_service.execute_sql(sql_merge)
+
+    elapsed = time.time() - start_time
+    calc_service.send_feishu_alarm(f"月度同步脚本执行结束： 月份-{invoice_month} ，共执行时长{elapsed:.2f}秒")
 
 
 
